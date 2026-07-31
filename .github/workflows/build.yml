@@ -1,0 +1,22 @@
+name: Build C Console App
+
+on: [push, workflow_dispatch]
+
+jobs:
+  build:
+  # استفاده از سیستم‌عامل ویندوز برای کامپایل مستقیم فایل exe ویندوزی
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Compile with MinGW (GCC)
+      run: |
+        gcc main.c -o capslock_control.exe -luser32
+
+    - name: Upload compiled EXE
+      uses: actions/upload-artifact@v4
+      with:
+        name: capslock-app
+        path: capslock_control.exe
