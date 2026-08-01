@@ -1,22 +1,23 @@
-name: Build C Console App
+name: Build Windows Tool
 
-on: [push, workflow_dispatch]
+on:
+  push:
+    branches: [ "main", "master" ]
 
 jobs:
   build:
-  # استفاده از سیستم‌عامل ویندوز برای کامپایل مستقیم فایل exe ویندوزی
     runs-on: windows-latest
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v3
 
-    - name: Compile with MinGW (GCC)
+    - name: Compile C to Windows Executable
       run: |
-        gcc main.c -o capslock_control.exe -luser32
+        gcc main.c -o send_number.exe -lhid -lsetupapi
 
-    - name: Upload compiled EXE
-      uses: actions/upload-artifact@v4
+    - name: Upload Executable Artifact
+      uses: actions/upload-artifact@v3
       with:
-        name: capslock-app
-        path: capslock_control.exe
+        name: windows-cli-tool
+        path: send_number.exe
