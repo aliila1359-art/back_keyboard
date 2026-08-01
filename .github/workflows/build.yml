@@ -9,15 +9,15 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Compile C to Windows Executable
-      run: |
-        gcc main.c -o send_number.exe -lhid -lsetupapi
+      - name: Compile C to Windows Executable
+        run: |
+          gcc main.c -o send_number.exe -lhid -lsetupapi
 
-   - name: Upload Executable Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: windows-cli-tool
-        path: send_number.exe
+      - name: Upload Executable Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-cli-tool
+          path: send_number.exe
