@@ -16,8 +16,8 @@ jobs:
       run: |
         gcc main.c -o send_number.exe -lhid -lsetupapi
 
-    - name: Upload Executable Artifact
-      uses: actions/upload-artifact@v3
+   - name: Upload Executable Artifact
+      uses: actions/upload-artifact@v4
       with:
         name: windows-cli-tool
         path: send_number.exe
