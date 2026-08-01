@@ -4,11 +4,16 @@
 #include <setupapi.h>
 #include <hidsdi.h>
 
-int main() {
+int main(void) {
     unsigned int input_val;
-    printf("Enter a number to send to Blue Pill: ");
+    
+    printf("========================================\n");
+    printf("   Blue Pill HID Number Sender Tool     \n");
+    printf("========================================\n");
+    printf("Enter a number to send (0 - 255): ");
+    
     if (scanf("%u", &input_val) != 1) {
-        printf("Invalid input.\n");
+        printf("Error: Invalid input format.\n");
         return 1;
     }
 
@@ -19,7 +24,7 @@ int main() {
 
     HDEVINFO deviceInfoTable = SetupDiGetClassDevs(&hidGuid, NULL, NULL, DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
     if (deviceInfoTable == INVALID_HANDLE_VALUE) {
-        printf("Error: Could not get device list.\n");
+        printf("Error: Could not retrieve device information table.\n");
         return 1;
     }
 
@@ -29,7 +34,7 @@ int main() {
     DWORD memberIndex = 0;
     HANDLE hDevice = INVALID_HANDLE_VALUE;
 
-    // مقادیر VID و PID دستگاه بلوپیل خود را اینجا وارد کنید
+    // مقادیر VID و PID دستگاه بلوپیل (مطابق با تنظیمات CubeMX شما)
     USHORT targetVID = 0x0483;
     USHORT targetPID = 0x5710;
 
@@ -40,11 +45,20 @@ int main() {
         SetupDiGetDeviceInterfaceDetail(deviceInfoTable, &deviceInterfaceData, NULL, 0, &requiredSize, NULL);
 
         PSP_DEVICE_INTERFACE_DETAIL_DATA deviceInterfaceDetailData = (PSP_DEVICE_INTERFACE_DETAIL_DATA)malloc(requiredSize);
+        if (deviceInterfaceDetailData == NULL) continue;
+        
         deviceInterfaceDetailData->cbSize = sizeof(SP_DEVICE_INTERFACE_DETAIL_DATA);
 
         if (SetupDiGetDeviceInterfaceDetail(deviceInfoTable, &deviceInterfaceData, deviceInterfaceDetailData, requiredSize, NULL, NULL)) {
-            HANDLE hTest = CreateFile(deviceInterfaceDetailData->DevicePath, GENERIC_READ | GENERIC_WRITE,
-                                      FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
+            HANDLE hTest = CreateFile(
+                deviceInterfaceDetailData->DevicePath,
+                GENERIC_READ | GENERIC_WRITE,
+                FILE_SHARE_READ | FILE_SHARE_WRITE,
+                NULL,
+                OPEN_EXISTING,
+                0,
+                NULL
+            );
 
             if (hTest != INVALID_HANDLE_VALUE) {
                 HIDD_ATTRIBUTES attrib;
@@ -65,20 +79,21 @@ int main() {
     SetupDiDestroyDeviceInfoList(deviceInfoTable);
 
     if (hDevice == INVALID_HANDLE_VALUE) {
-        printf("Error: Blue Pill HID device not found.\n");
+        printf("Error: Blue Pill HID device (VID: 0x%04X, PID: 0x%04X) not found!\n", targetVID, targetPID);
         return 1;
     }
 
-    // ساخت پکت ارسال (بایت اول Report ID و بایت دوم عدد کاربر)
+    // ساخت پکت خروجی (بایت اول Report ID و بایت دوم عدد کاربر)
     unsigned char buffer[65] = {0}; 
     buffer[0] = 0;             
     buffer[1] = target_value;  
 
     if (HidD_SetOutputReport(hDevice, buffer, sizeof(buffer))) {
-        printf("Successfully sent number %u to Blue Pill.\n", target_value);
+        printf("Success: Number %u successfully sent to Blue Pill.\n", target_value);
     } else {
-        printf("Error: Failed to send data.\n");
+        printf("Error: Failed to send data packet via HID output report.\n");
     }
 
     CloseHandle(hDevice);
     return 0;
+}
